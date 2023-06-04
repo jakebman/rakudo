@@ -5,7 +5,7 @@ class RakuAST::Package
   is RakuAST::IMPL::ImmediateBlockUser
   is RakuAST::Declaration
   is RakuAST::AttachTarget
-  is RakuAST::BeginTime
+  is RakuAST::ParseTime
   is RakuAST::TraitTarget
   is RakuAST::ImplicitBlockSemanticsProvider
   is RakuAST::LexicalScope
@@ -170,9 +170,6 @@ class RakuAST::Package
         Nil
     }
 
-    # We install the name before parsing the class body.
-    method is-begin-performed-before-children() { True }
-
     method IMPL-GENERATE-LEXICAL-DECLARATION(RakuAST::Name $name, Mu $type-object) {
         RakuAST::Declaration::LexicalPackage.new:
             :lexical-name($name),
@@ -180,7 +177,7 @@ class RakuAST::Package
             :package(self);
     }
 
-    method PERFORM-BEGIN(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
          # Note that this early return is actually not effective as the begin handler will
          # already be run when the parser enters the package and we only know that it's a
          # stub when we are done parsing the body.
