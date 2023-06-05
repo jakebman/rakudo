@@ -2098,32 +2098,32 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
     }
 
     method decint($/) {
-        self.attach: $/, $*LITERALS.intern-int: ~$/, 10, -> {
+        make $*LITERALS.intern-int: ~$/, 10, -> {
             $/.panic("'$/' is not a valid number")
         }
     }
 
     method hexint($/) {
-        self.attach: $/, $*LITERALS.intern-int: ~$/, 16, -> {
+        make $*LITERALS.intern-int: ~$/, 16, -> {
             $/.panic("'$/' is not a valid number")
         }
     }
 
     method octint($/) {
-        self.attach: $/, $*LITERALS.intern-int: ~$/, 8, -> {
+        make $*LITERALS.intern-int: ~$/, 8, -> {
             $/.panic("'$/' is not a valid number")
         }
     }
 
     method binint($/) {
-        self.attach: $/, $*LITERALS.intern-int: ~$/, 2, -> {
+        make $*LITERALS.intern-int: ~$/, 2, -> {
             $/.panic("'$/' is not a valid number")
         }
     }
 
     method signed-integer($/) {
         my $integer := $<integer>.ast;
-        self.attach: $/, $<sign> eq '-' || $<sign> eq '−'
+        make $<sign> eq '-' || $<sign> eq '−'
             ?? nqp::neg_I($integer, $integer.WHAT)
             !! $integer;
     }
