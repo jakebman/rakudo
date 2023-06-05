@@ -26,9 +26,6 @@ role Raku::CommonActions {
         if nqp::istype($node, self.r('ImplicitLookups')) {
             $node.resolve-implicit-lookups-with($*R);
         }
-        if nqp::istype($node, self.r('Attaching')) {
-            $node.attach($*R);
-        }
 
         self.SET-NODE-ORIGIN($/, $node, :$as-key-origin);
 
