@@ -22,12 +22,7 @@ role Raku::CommonActions {
     # as we go. This factors out that process and attaches the AST to the match
     # object.
     method attach($/, $node, :$as-key-origin) {
-        if nqp::istype($node, self.r('ParseTime')) {
-            $node.ensure-parse-performed($*R, $*CU.context);
-        }
-        if nqp::istype($node, self.r('BeginTime')) {
-            $node.ensure-begin-performed($*R, $*CU.context);
-        }
+        $node.to-begin-time($*R, $*CU.context);
         if nqp::istype($node, self.r('ImplicitLookups')) {
             $node.resolve-implicit-lookups-with($*R);
         }
