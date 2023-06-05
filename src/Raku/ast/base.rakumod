@@ -45,12 +45,6 @@ class RakuAST::Node {
     # and False otherwise.
     method can-be-bound-to() { False }
 
-    # Resolves all nodes beneath this one, recursively, using the specified
-    # resolver.
-    method resolve-all(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
-        self.IMPL-CHECK($resolver, $context, True);
-    }
-
     method set-origin(RakuAST::Origin $origin) {
         nqp::bindattr(self, RakuAST::Node, '$!origin', $origin);
     }
