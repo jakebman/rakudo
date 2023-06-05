@@ -23,12 +23,7 @@ role Raku::CommonActions {
     # object.
     method attach($/, $node, :$as-key-origin) {
         $node.to-begin-time($*R, $*CU.context);
-        if nqp::istype($node, self.r('ImplicitLookups')) {
-            $node.resolve-implicit-lookups-with($*R);
-        }
-
         self.SET-NODE-ORIGIN($/, $node, :$as-key-origin);
-
         make $node;
     }
 

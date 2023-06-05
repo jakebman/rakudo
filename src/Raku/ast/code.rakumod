@@ -1251,11 +1251,6 @@ class RakuAST::PointyBlock
     }
 
     method PERFORM-BEGIN(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
-        # Cannot rely on IMPL-CHECK getting run before this, as that would
-        # also run our children's BEGIN handlers which would screw up our
-        # block-or-hash detection
-        self.resolve-implicit-lookups-with($resolver);
-
         # Make sure that our placeholder signature has resolutions performed,
         # and that we don't produce a topic parameter.
         if $!signature {
