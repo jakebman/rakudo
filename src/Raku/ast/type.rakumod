@@ -40,6 +40,7 @@ class RakuAST::Type
 # A simple type name, e.g. Int, Foo::Bar, etc.
 class RakuAST::Type::Simple
   is RakuAST::Type
+  is RakuAST::ParseTime
   is RakuAST::Lookup
 {
     has RakuAST::Name $.name;
@@ -56,6 +57,13 @@ class RakuAST::Type::Simple
             self.set-resolution($resolved);
         }
         Nil
+    }
+
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
+        my $resolved := $resolver.resolve-name-constant-in-setting(self.name);
+        if $resolved {
+            self.set-resolution($resolved);
+        }
     }
 
     method PRODUCE-META-OBJECT() {
