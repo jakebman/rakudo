@@ -25,6 +25,9 @@ role Raku::CommonActions {
         if nqp::istype($node, self.r('ParseTime')) {
             $node.ensure-parse-performed($*R, $*CU.context);
         }
+        if nqp::istype($node, self.r('BeginTime')) {
+            $node.ensure-begin-performed($*R, $*CU.context);
+        }
         if nqp::istype($node, self.r('ImplicitLookups')) {
             $node.resolve-implicit-lookups-with($*R);
         }
@@ -424,14 +427,12 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
             $block.replace-signature($<signature>.ast);
         }
         $block.replace-body($<blockoid>.ast);
-        $block.ensure-begin-performed($*R, $*CU.context);
         self.attach: $/, $block;
     }
 
     method block($/) {
         my $block := $*BLOCK;
         $block.replace-body($<blockoid>.ast);
-        $block.ensure-begin-performed($*R, $*CU.context);
         self.attach: $/, $block;
     }
 
@@ -442,7 +443,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
     method unit-block($/) {
         my $block := $*BLOCK;
         $block.replace-body(self.r('Blockoid').new($<statementlist>.ast));
-        $block.ensure-begin-performed($*R, $*CU.context);
         self.attach: $/, $block;
     }
 
@@ -595,7 +595,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
             my $ast := $<arglist><EXPR>
               ?? $Pragma.new(:$name, :argument($<arglist><EXPR>.ast), :off)
               !! $Pragma.new(:$name, :off);
-            $ast.ensure-begin-performed($*R, $*CU.context);
             self.attach: $/, $ast;
         }
         else {
@@ -644,7 +643,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
         }
 
         $ast := self.r('Statement', 'Need').new(:@module-names);
-        $ast.ensure-begin-performed($*R, $*CU.context);
 
         self.attach: $/, $ast;
     }
@@ -734,7 +732,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
 
     method statement-prefix:sym<BEGIN>($/) {
         my $ast := self.r('StatementPrefix', 'Phaser', 'Begin').new($<blorst>.ast);
-        $ast.ensure-begin-performed($*R, $*CU.context);
         self.attach: $/, $ast;
     }
 
@@ -1671,7 +1668,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
         if nqp::istype($package, self.r('ParseTime')) {
             $package.ensure-parse-performed($*R, $*CU.context);
         }
-        $package.ensure-begin-performed($*R, $*CU.context);
 
         # Let the resolver know which package we're in.
         $*R.push-package($package);
@@ -1873,7 +1869,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
           !! $<blockoid>.ast
         );
         $routine.IMPL-CHECK($*R, $*CU.context, 1);
-        $routine.ensure-begin-performed($*R, $*CU.context);
         self.attach: $/, $routine;
     }
 
@@ -1896,7 +1891,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
         }
         $regex.replace-body($<nibble>.ast);
         $regex.IMPL-CHECK($*R, $*CU.context, 1);
-        $regex.ensure-begin-performed($*R, $*CU.context);
         self.attach: $/, $regex;
     }
 
@@ -2030,7 +2024,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
             my $trait := $<circumfix>
                 ?? $ast-type.new(:name($<longname>.ast), :argument($<circumfix>.ast))
                 !! $ast-type.new(:name($<longname>.ast));
-            $trait.ensure-begin-performed($*R, $*CU.context);
             self.attach: $/, $trait;
         }
     }
