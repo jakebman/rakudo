@@ -51,16 +51,8 @@ class RakuAST::Type::Simple
         $obj
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
-        my $resolved := $resolver.resolve-name-constant($!name);
-        if $resolved {
-            self.set-resolution($resolved);
-        }
-        Nil
-    }
-
     method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
-        my $resolved := $resolver.resolve-name-constant-in-setting(self.name);
+        my $resolved := $resolver.resolve-name-constant(self.name);
         if $resolved {
             self.set-resolution($resolved);
         }
@@ -99,26 +91,18 @@ class RakuAST::Type::Simple
 class RakuAST::Type::Setting
   is RakuAST::Type::Simple
 {
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-name-constant-in-setting(self.name);
         if $resolved {
             self.set-resolution($resolved);
         }
-        Nil
     }
 }
 
 class RakuAST::Type::Derived
   is RakuAST::Type
-  is RakuAST::Lookup
 {
     has RakuAST::Type $.base-type;
-
-    method resolve-with(RakuAST::Resolver $resolver) {
-        $!base-type.resolve-with($resolver);
-        self.set-resolution(self);
-        Nil
-    }
 
     method IMPL-BASE-TYPE() {
         nqp::istype($!base-type, RakuAST::Type::Derived) ?? $!base-type.IMPL-BASE-TYPE !! $!base-type
@@ -127,7 +111,6 @@ class RakuAST::Type::Derived
 
 class RakuAST::Type::Coercion
   is RakuAST::Type::Derived
-  is RakuAST::Declaration
 {
     has RakuAST::Type $.constraint;
 
@@ -181,7 +164,6 @@ class RakuAST::Type::Coercion
 
 class RakuAST::Type::Definedness
   is RakuAST::Type::Derived
-  is RakuAST::Declaration
 {
     has Bool $.definite;
 

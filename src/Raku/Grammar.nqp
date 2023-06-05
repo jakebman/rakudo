@@ -463,7 +463,7 @@ role Raku::Common {
     method check-variable($var) {
         my $ast := $var.ast;
         if nqp::eqaddr($ast.WHAT,self.actions.r('Var', 'Lexical').WHAT) {
-            $ast.resolve-with($*R);
+            $ast.ensure-parse-performed($*R, $*CU.context);
             unless $ast.is-resolved {
                 if $ast.sigil eq '&' {
                    if $ast.IMPL-IS-META-OP {

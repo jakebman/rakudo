@@ -1766,7 +1766,6 @@ class RakuAST::Methodish
             $signature.set-is-on-method(True);
             $signature.set-is-on-named-method(True) if self.name;
             $signature.set-is-on-meta-method(True) if nqp::can(self, 'meta') && self.meta;
-            $signature.attach($resolver);
             $signature.IMPL-ENSURE-IMPLICITS;
         }
 

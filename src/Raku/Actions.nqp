@@ -1643,7 +1643,6 @@ class Raku::Actions is HLL::Actions does Raku::CommonActions {
         }
         else {
             $*PACKAGE := my $package := self.r('Package').new: :$declarator, :$how, :$name, :$scope;
-            $package.resolve-with($*R);
         }
         self.set-declarand($/, $*PACKAGE);
     }

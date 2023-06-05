@@ -196,6 +196,7 @@ class RakuAST::Call::Name
   is RakuAST::Term
   is RakuAST::Call
   is RakuAST::Lookup
+  is RakuAST::CheckTime
 {
     has RakuAST::Name $.name;
     has Mu $!package;
@@ -214,7 +215,7 @@ class RakuAST::Call::Name
 
     method needs-resolution() { $!name.is-identifier }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-CHECK(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         nqp::bindattr(self, RakuAST::Call::Name, '$!package', $resolver.current-package);
         my $resolved := $resolver.resolve-name($!name, :sigil('&'));
         if $resolved {
@@ -514,6 +515,7 @@ class RakuAST::Call::PrivateMethod
   is RakuAST::Call::Methodish
   is RakuAST::Lookup
   is RakuAST::ImplicitLookups
+  is RakuAST::ParseTime
 {
     has RakuAST::Name $.name;
     has Mu $!package;
@@ -532,7 +534,7 @@ class RakuAST::Call::PrivateMethod
 
     method needs-resolution() { False }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         nqp::bindattr(self, RakuAST::Call::PrivateMethod, '$!package', $resolver.current-package);
         Nil
     }
@@ -620,6 +622,7 @@ class RakuAST::Call::MaybeMethod
 class RakuAST::Call::VarMethod
   is RakuAST::Call::Methodish
   is RakuAST::Lookup
+  is RakuAST::CheckTime
 {
     has RakuAST::Name $.name;
 
@@ -639,7 +642,7 @@ class RakuAST::Call::VarMethod
 
     method needs-resolution() { $!name.is-identifier }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-CHECK(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-name($!name, :sigil('&'));
         if $resolved {
             self.set-resolution($resolved);

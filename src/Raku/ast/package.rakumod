@@ -102,22 +102,6 @@ class RakuAST::Package
         nqp::bindattr(self, RakuAST::Package, '$!is-stub', $is-stub ?? True !! False);
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
-        if $!name {
-            my $resolved := $resolver.resolve-name-constant($!name);
-            if $resolved {
-                my $meta-object := $resolved.compile-time-value;
-                if $meta-object.HOW.HOW.name($meta-object.HOW) ne 'Perl6::Metamodel::PackageHOW'
-                    && nqp::can($meta-object.HOW, 'is_composed')
-                    && !$meta-object.HOW.is_composed($meta-object)
-                {
-                    self.set-resolution($resolved);
-                }
-            }
-        }
-        Nil
-    }
-
     method default-scope() { 'our' }
 
     method default-how() {
@@ -178,10 +162,23 @@ class RakuAST::Package
     }
 
     method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
-         # Note that this early return is actually not effective as the begin handler will
-         # already be run when the parser enters the package and we only know that it's a
-         # stub when we are done parsing the body.
-         return Nil if $!is-stub;
+        if $!name {
+            my $resolved := $resolver.resolve-name-constant($!name);
+            if $resolved {
+                my $meta-object := $resolved.compile-time-value;
+                if $meta-object.HOW.HOW.name($meta-object.HOW) ne 'Perl6::Metamodel::PackageHOW'
+                    && nqp::can($meta-object.HOW, 'is_composed')
+                    && !$meta-object.HOW.is_composed($meta-object)
+                {
+                    self.set-resolution($resolved);
+                }
+            }
+        }
+
+        # Note that this early return is actually not effective as the begin handler will
+        # already be run when the parser enters the package and we only know that it's a
+        # stub when we are done parsing the body.
+        return Nil if $!is-stub;
 
         # Install the symbol.
         my str $scope := self.scope;
@@ -432,14 +429,6 @@ class RakuAST::Package
 class RakuAST::Package::Augmented
     is RakuAST::Package
 {
-    method resolve-with(RakuAST::Resolver $resolver) {
-        my $resolved := $resolver.resolve-name(self.name);
-        if $resolved {
-            self.set-resolution($resolved);
-        }
-        Nil
-    }
-
     method PRODUCE-STUBBED-META-OBJECT() {
         self.resolution.compile-time-value
     }

@@ -755,10 +755,6 @@ class RakuAST::ImplicitLookups
     method implicit-lookups-to-begin-time(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         for self.IMPL-UNWRAP-LIST(self.get-implicit-lookups()) {
             $_.to-begin-time($resolver, $context);
-            # TODO Eliminate when resolve-with is gone
-            if nqp::can($_, 'resolve-with') {
-                $_.resolve-with($resolver);
-            }
         }
     }
 }

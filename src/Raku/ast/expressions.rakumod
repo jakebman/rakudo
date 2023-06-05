@@ -147,6 +147,7 @@ class RakuAST::Infixish
 class RakuAST::Infix
   is RakuAST::Infixish
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has str $.operator;
     has OperatorProperties $.properties;
@@ -169,7 +170,7 @@ class RakuAST::Infix
         ])
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-infix($!operator);
         if $resolved {
             self.set-resolution($resolved);
@@ -996,6 +997,7 @@ class RakuAST::Prefixish
 class RakuAST::Prefix
   is RakuAST::Prefixish
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has str $.operator;
 
@@ -1006,7 +1008,7 @@ class RakuAST::Prefix
         $obj
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-prefix($!operator);
         if $resolved {
             self.set-resolution($resolved);
@@ -1079,9 +1081,9 @@ class RakuAST::ApplyPrefix
     method PERFORM-BEGIN(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         if nqp::bitand_i($!prefix.IMPL-CURRIES, 1) {
             if nqp::istype($!operand, RakuAST::Term::Whatever) {
-                nqp::bindattr(self, RakuAST::ApplyPrefix, '$!operand', RakuAST::Var::Lexical.new('$_'));
+                nqp::bindattr(self, RakuAST::ApplyPrefix, '$!operand',
+                    RakuAST::Var::Lexical.new('$_').to-begin-time($resolver, $context));
                 self.IMPL-CURRY($resolver, $context, '$_');
-                $!operand.resolve-with($resolver);
             }
         }
         if nqp::bitand_i($!prefix.IMPL-CURRIES, 2) {
@@ -1139,6 +1141,7 @@ class RakuAST::Postfixish
 class RakuAST::Postfix
   is RakuAST::Postfixish
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has str $.operator;
 
@@ -1149,7 +1152,7 @@ class RakuAST::Postfix
         $obj
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-postfix($!operator);
         if $resolved {
             self.set-resolution($resolved);
@@ -1178,6 +1181,7 @@ class RakuAST::Postfix
 class RakuAST::Postfix::Power
   is RakuAST::Postfixish
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has Int $.power;
 
@@ -1188,7 +1192,7 @@ class RakuAST::Postfix::Power
         $obj
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-postfix('ⁿ');
         if $resolved {
             self.set-resolution($resolved);
@@ -1219,6 +1223,7 @@ class RakuAST::Postcircumfix
 class RakuAST::Postcircumfix::ArrayIndex
   is RakuAST::Postcircumfix
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has RakuAST::SemiList $.index;
     has RakuAST::Expression $.assignee;
@@ -1239,7 +1244,7 @@ class RakuAST::Postcircumfix::ArrayIndex
         True
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-lexical(
             nqp::elems($!index.code-statements) > 1
                 ?? '&postcircumfix:<[; ]>'
@@ -1292,6 +1297,7 @@ class RakuAST::Postcircumfix::ArrayIndex
 class RakuAST::Postcircumfix::HashIndex
   is RakuAST::Postcircumfix
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has RakuAST::SemiList $.index;
 
@@ -1306,7 +1312,7 @@ class RakuAST::Postcircumfix::HashIndex
         True
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-lexical(
             nqp::elems($!index.code-statements) > 1
                 ?? '&postcircumfix:<{; }>'
@@ -1349,6 +1355,7 @@ class RakuAST::Postcircumfix::HashIndex
 class RakuAST::Postcircumfix::LiteralHashIndex
   is RakuAST::Postcircumfix
   is RakuAST::Lookup
+  is RakuAST::ParseTime
 {
     has RakuAST::QuotedString $.index;
     has RakuAST::Expression $.assignee;
@@ -1369,7 +1376,7 @@ class RakuAST::Postcircumfix::LiteralHashIndex
         True
     }
 
-    method resolve-with(RakuAST::Resolver $resolver) {
+    method PERFORM-PARSE(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         my $resolved := $resolver.resolve-lexical('&postcircumfix:<{ }>');
         if $resolved {
             self.set-resolution($resolved);
@@ -1476,9 +1483,9 @@ class RakuAST::ApplyPostfix
     method PERFORM-BEGIN(RakuAST::Resolver $resolver, RakuAST::IMPL::QASTContext $context) {
         if nqp::bitand_i($!postfix.IMPL-CURRIES, 1) {
             if nqp::istype($!operand, RakuAST::Term::Whatever) {
-                nqp::bindattr(self, RakuAST::ApplyPostfix, '$!operand', RakuAST::Var::Lexical.new('$_'));
+                nqp::bindattr(self, RakuAST::ApplyPostfix, '$!operand',
+                    RakuAST::Var::Lexical.new('$_').to-begin-time($resolver, $context));
                 self.IMPL-CURRY($resolver, $context, '$_');
-                $!operand.resolve-with($resolver);
             }
         }
         if nqp::bitand_i($!postfix.IMPL-CURRIES, 2) {
