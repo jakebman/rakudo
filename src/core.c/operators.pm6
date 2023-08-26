@@ -89,7 +89,7 @@ multi sub infix:<but>(Mu:U \obj, Mu:U \rolish) {
     obj.^mixin($role);
 }
 sub GENERATE-ROLE-FROM-VALUE($val) is implementation-detail {
-    my $name = "<but|{$val.^name}>";
+    my $name = "<but {$val.^name}>";
     my $role := Metamodel::ParametricRoleHOW.new_type(:$name);
     # The auto-generated role doesn't use any of 6.e features. Thus can safely be proclaimed as 6.c.
     $role.^set_language_revision(1);
